@@ -1,6 +1,6 @@
 import Foundation
 
-struct EmptyStruct:TestProtocol, TestProtocol2, TestProtocol3, Initializable {
+struct EmptyStruct:TestProtocol, TestProtocol2, TestProtocol3 {
   let thing = "I'm here"
   init(){
 
@@ -34,11 +34,6 @@ struct DoubleDependencyStruct: DoubleDependencyProtocol {
   let dependency1: TestProtocol2
 }
 
-protocol InitializableProtocol {}
-struct InitializableStruct: Initializable, InitializableProtocol {
-  init(){}
-}
-
 // TODO: example with injecting generics
 // TODO: example with injecting classes
 // TODO: example with injecting enums
@@ -46,65 +41,76 @@ struct InitializableStruct: Initializable, InitializableProtocol {
 // TODO: Add .Singleton scope and store the instances in a cache
 // TODO: possibility to tag injections
 
+func test() -> Void {
+    
 
-let instanceInjector = InstanceInjector()
+    
+    do {
 
-do {
+        /*
+        let instanceInjector = InstanceInjector(resolver:Resolver())
+        instanceInjector.bind(toConstructor: {EmptyStruct()})
+        instanceInjector.bind(TestProtocol.self, toConstructor: TestStruct.init)
+        instanceInjector.bind(TestProtocol2.self, toInstance: TestStruct2())
+        instanceInjector.bind(TestProtocol3.self, toConstructor: {TestStruct3()})
+        instanceInjector.bind(InitializableProtocol.self, toType: InitializableStruct.self)
+        instanceInjector.bind(TestDependencyProtocol.self, toConstructor: { dependency in return DependingStruct(dependency: dependency) })
+        instanceInjector.bind(DoubleDependencyProtocol.self, toConstructor: {d0, d1 in return DoubleDependencyStruct(dependency0: d0, dependency1: d1)})
+        instanceInjector.bind(TestStruct4.self, toConstructor: TestStruct4.init)
+        
+        let m = try instanceInjector.resolve(TestProtocol.self)
+        let k = try instanceInjector.resolve(TestProtocol2.self)
+        let l = try instanceInjector.resolve(TestProtocol3.self)
+        let s = try instanceInjector.resolve(TestDependencyProtocol.self)
+        let f = try instanceInjector.resolve(DoubleDependencyProtocol.self)
+        let y = try instanceInjector.resolve(TestStruct4.self)
+*/
+        
+        let i = Injector()
+        
+        let resolver = i
+            .bind(TestProtocol.self).to(TestStruct.init)
+            .bind(TestProtocol2.self).to(TestStruct2.init)
+            .inScope(.Singleton).bind(TestProtocol3.self).to(TestStruct3.init)
+            .resolve()
 
-  instanceInjector.bind(toConstructor: {EmptyStruct()})
-  instanceInjector.bind(TestProtocol.self, toConstructor: TestStruct.init)
-  instanceInjector.bind(TestProtocol2.self, toInstance: TestStruct2())
-  instanceInjector.bind(TestProtocol3.self, toConstructor: {TestStruct3()})
-  instanceInjector.bind(InitializableProtocol.self, toType: InitializableStruct.self)
-  instanceInjector.bind(TestDependencyProtocol.self, toConstructor: { dependency in return DependingStruct(dependency: dependency) })
-  instanceInjector.bind(DoubleDependencyProtocol.self, toConstructor: {d0, d1 in return DoubleDependencyStruct(dependency0: d0, dependency1: d1)})
-  instanceInjector.bind(TestStruct4.self, toConstructor: TestStruct4.init)
-
-  let e = try instanceInjector.resolve(TestProtocol.self)
-  let k = try instanceInjector.resolve(TestProtocol2.self)
-  let l = try instanceInjector.resolve(TestProtocol3.self)
-  let s = try instanceInjector.resolve(TestDependencyProtocol.self)
-  let f = try instanceInjector.resolve(DoubleDependencyProtocol.self)
-  let y = try instanceInjector.resolve(TestStruct4.self)
-
-}catch InjectionError.BindingNotFound(let message){
-  print("fail: \(message)")
+        resolver.check()
+        
+        let t0 = try resolver.tryResolve(TestProtocol.self)
+        let t1 = try resolver.tryResolve(TestProtocol2.self)
+        let t2 = try resolver.tryResolve(TestProtocol3.self)
+        
+        
+        let graphChecker = DependencyGraphChecker()
+        
+        let a = Node(name: "AllTheThings")
+        let b = Node(name: "BoomThatIsCool")
+        let bb = Node(name: "BooleanWorld")
+        let c = Node(name: "Crass")
+        let cc = Node(name: "CoolCool")
+        let d = Node(name: "DoubleMeUp")
+        let e = Node(name: "EverestAwaits")
+        
+        a.addDependency(b)
+        b.addDependency(c)
+        b.addDependency(bb)
+        a.addDependency(c)
+        c.addDependency(cc)
+        c.addDependency(d)
+        d.addDependency(e)
+        e.addDependency(a)
+        
+        let graph = graphChecker.resolve(a)
+        
+        print(graph.prettyPrint("", last: true))
+        
+    }catch InjectionError.BindingNotFound(let message){
+        print("fail: \(message)")
+    }
+    catch{
+        print("unknown errors")
+    }
+    
+    
+   
 }
-
-
-let i = Injector()
-
-let resolver = i
-  .bind(TestProtocol.self).to(TestStruct.init)
-  .bind(TestProtocol2.self).to(TestStruct2.init)
-  .inScope(.Singleton).bind(TestProtocol3.self).to(TestStruct3.init)
-  .resolve()
-
-let t0 = try resolver.resolve(TestProtocol.self)
-let t1 = try resolver.resolve(TestProtocol2.self)
-let t2 = try resolver.resolve(TestProtocol3.self)
-
-
-let graphChecker = DependencyGraphChecker()
-
-let a = Node(name: "AllTheThings")
-let b = Node(name: "BoomThatIsCool")
-let bb = Node(name: "BooleanWorld")
-let c = Node(name: "Crass")
-let cc = Node(name: "CoolCool")
-let d = Node(name: "DoubleMeUp")
-let e = Node(name: "EverestAwaits")
-
-a.addDependency(b)
-b.addDependency(c)
-b.addDependency(bb)
-a.addDependency(c)
-c.addDependency(cc)
-c.addDependency(d)
-d.addDependency(e)
-e.addDependency(a)
-
-let graph = graphChecker.resolve(a, depth: 0)
-
-print(graph.prettyPrint("", last: true))
-

@@ -21,9 +21,9 @@ class Node {
 }
 
 enum DependencyType {
-  case Leaf(depth:Int, name: String)
-  case Branch(depth:Int, name: String, branches: [DependencyType])
-  case Circular(depth:Int, name: String)
+  case Leaf(name: String)
+  case Branch(name: String, branches: [DependencyType])
+  case Circular(name: String)
 
   func prettyPrint(indent: String, last:Bool) -> String {
 
@@ -39,11 +39,11 @@ enum DependencyType {
     }
 
     switch self {
-    case .Leaf(_, let name):
+    case .Leaf(let name):
       output += "" + name + "\n"
-    case .Circular(_, let name):
+    case .Circular(let name):
       output += "Circlular dependency on \(name)\n"
-    case .Branch(_, let name, let branches):
+    case .Branch(let name, let branches):
       output += name + "\n"
       for i in branches.indices {
         output += branches[i].prettyPrint(outputIndent, last: i == branches.count - 1)
@@ -57,28 +57,29 @@ enum DependencyType {
 
 class DependencyGraphChecker{
 
-  func resolve(node:Node, depth:Int) -> DependencyType {
+  func resolve(node:Node) -> DependencyType {
 
     if node.tempMark {
       //output.append("Circular dependency on \(node.name)")
-      return DependencyType.Circular(depth: depth, name: node.name)
+      return DependencyType.Circular( name: node.name)
     }
 
     if node.edges.isEmpty {
       node.permanentMark = true
-      return .Leaf(depth: depth, name: node.name)
+      return .Leaf(name: node.name)
     }
 
     var subBranches: [DependencyType] = []
     node.tempMark = true
     for edge in node.edges {
-      let dependencies = resolve(edge, depth: depth + 1)
+      let dependencies = resolve(edge)
       subBranches.append(dependencies)
     }
 
     node.permanentMark = true
     node.tempMark = false
-    return .Branch(depth:depth, name: node.name, branches: subBranches)
+    return .Branch(name: node.name, branches: subBranches)
     
   }
+    
 }
