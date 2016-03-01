@@ -25,6 +25,7 @@ enum DependencyType {
   case Branch(name: String, branches: [DependencyType])
   case Circular(name: String)
 
+  //TODO: Maybe make another function for the root node to be able to skip the <root>
   func prettyPrint(indent: String, last:Bool) -> String {
 
     var outputIndent = indent
@@ -38,6 +39,7 @@ enum DependencyType {
       outputIndent += "║ "
     }
 
+    //TODO: Would be nice to also print the actual implementation type here
     switch self {
     case .Leaf(let name):
       output += "" + name + "\n"

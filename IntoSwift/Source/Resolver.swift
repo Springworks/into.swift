@@ -43,6 +43,8 @@ class Resolver {
     }
     
     func tryResolve<T>() throws -> T {
+        // TODO: If we would pass the type we are trying to resolve here we could find circular dependencies
+        // on the fly without checking first. It would be a bit more expensive since it needs to look for that too but it might be worth it
         for binding in bindings {
             if let instanceBinding = binding as? InstanceBindingContainer<T> {
                 if instanceBinding.exposedType == T.self {
@@ -76,12 +78,15 @@ class Resolver {
         let nodeCache = NodeCache()
         let graphChecker = DependencyGraphChecker()
         
+        let rootNode = Node(name: "<root>")
+        
         //TODO: Do this with a map() instead
         for binding in bindings {
             let exposedTypeName = String(binding.getExposedType())
             //let implementationName = String(binding.getImplementationType())
             
             let node = nodeCache.get(binding.getExposedType())
+            rootNode.addDependency(node)
             let dependencies = binding.getDependencies()
             for dependency in dependencies {
                 let edge = nodeCache.get(dependency)
@@ -90,13 +95,10 @@ class Resolver {
             print(exposedTypeName)
         }
         
-        let nodes = nodeCache.getNodes()
-        for node in nodes {
-            let tree = graphChecker.resolve(node)
-            return tree.prettyPrint("", last: true)
-        }
-        
-        return ""
+
+        let tree = graphChecker.resolve(rootNode)
+        return tree.prettyPrint("", last: true)
+
     }
 
  

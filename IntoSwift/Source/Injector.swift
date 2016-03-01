@@ -47,6 +47,8 @@ class Injector {
     init(){
         resolver = Resolver()
         instanceInjector = InstanceInjector(resolver: resolver)
+        
+
     }
     
     func bind<T>(type: T.Type) -> OngoingBinding<T> {
@@ -58,6 +60,9 @@ class Injector {
     }
     
     func resolve() -> Resolver {
+        
+        // TODO: bind the resolver so that it always can be accessed as an injection
+        
         // TODO: the resolver needs to be cloned here. Or maybe it should be a value type instead or something
         return resolver
     }
