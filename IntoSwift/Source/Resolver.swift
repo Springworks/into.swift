@@ -1,41 +1,43 @@
 protocol Binding {
-    func getExposedType() -> Any.Type
-    func getImplementationType() -> Any.Type
-    func getDependencies() -> [Any.Type]
+    var exposedTypeName: String {get}
+    var implementationTypeName: String {get}
+    var dependencyNames: [String] {get}
 }
 
 struct InstanceBindingContainer<ExposedType>: Binding {
     let exposedType: ExposedType.Type
     let implementationType: Any.Type
     let constructor: () throws -> ExposedType
-    let dependencies: [Any.Type]
-    
-    func getExposedType() -> Any.Type    {
-        return exposedType
-    }
-    func getImplementationType() -> Any.Type {
-        return implementationType
-    }
-    
-    func getDependencies() -> [Any.Type] {
-        return dependencies
-    }
+
+    let exposedTypeName: String
+    let implementationTypeName: String
+    let dependencyNames: [String]
 }
 
 class Resolver {
     
     // TODO: Could be an idea to have a dictionary to lookup name->Binding quick
     // might be more expensive to String(Some.Type) than to traverse the list
-    private var bindings: [Binding]
+    private var bindings: [String: Binding]
     
     init() {
-        bindings = []
+        bindings = [:]
     }
     
     func add<P,T>(exposedType exposedType: P.Type, implementationType: T.Type, constructor: () throws -> P, dependencies: [Any.Type]) -> Void {
         //TODO: What should happen when binding the same type multiple times? overwrite?
-        let binding = InstanceBindingContainer(exposedType: exposedType, implementationType:implementationType, constructor: constructor, dependencies: dependencies)
-        bindings.append(binding)
+        let exposedTypeName = String(exposedType)
+        let implementationTypeName = String(implementationType)
+        let dependenyNames = dependencies.map{String($0)}
+        
+        let binding = InstanceBindingContainer(exposedType: exposedType,
+            implementationType:implementationType,
+            constructor: constructor,
+            exposedTypeName: exposedTypeName,
+            implementationTypeName: implementationTypeName,
+            dependencyNames: dependenyNames)
+        
+        bindings[exposedTypeName] = binding
     }
     
     func tryResolve<T>(type: T.Type) throws -> T {
@@ -43,19 +45,20 @@ class Resolver {
     }
     
     func tryResolve<T>() throws -> T {
-        // TODO: If we would pass the type we are trying to resolve here we could find circular dependencies
-        // on the fly without checking first. It would be a bit more expensive since it needs to look for that too but it might be worth it
-        for binding in bindings {
-            if let instanceBinding = binding as? InstanceBindingContainer<T> {
-                if instanceBinding.exposedType == T.self {
-                    return try instanceBinding.constructor()
-                }else{
-                    // binding can be casted as T but is not what we are looking for
-                    //print("found something that conforms but now what is bound: \(instanceBinding.exposedType)")
-                }
-            }
+        
+        let exposedTypeName = String(T.self)
+        
+        guard let binding = bindings[exposedTypeName] else {
+             throw InjectionError.BindingNotFound("Type not bound to any implementation: \(exposedTypeName)")
         }
-        throw InjectionError.BindingNotFound("Could not find any binding for type: \(T.self)")
+        
+        guard let instanceBinding = binding as? InstanceBindingContainer<T> else {
+            throw InjectionError.BindingNotCastable("Could not cast bound type to: \(exposedTypeName)")
+        }
+
+        //TODO: Wrap this is an try catch and rethrow it as a binding exception
+        // if the constructor throws that is probably unrelated to the injection framework
+        return try instanceBinding.constructor()
     }
     
     func maybeResolve<T>() -> T? {
@@ -75,30 +78,55 @@ class Resolver {
     }
     
     func check() -> String {
+        
+        //checkForUnboundDependenciesTypes()
+        
         let nodeCache = NodeCache()
         let graphChecker = DependencyGraphChecker()
-        
-        let rootNode = Node(name: "<root>")
-        
-        //TODO: Do this with a map() instead
-        for binding in bindings {
-            let exposedTypeName = String(binding.getExposedType())
-            //let implementationName = String(binding.getImplementationType())
-            
-            let node = nodeCache.get(binding.getExposedType())
+
+        let rootNode = Node(exposedName: "ROOT", implementationName: "ROOT", isBound: true)
+
+        for binding in bindings.values {
+            let node = nodeCache.put(binding.exposedTypeName, implementationName: binding.implementationTypeName, isBound: true)
             rootNode.addDependency(node)
-            let dependencies = binding.getDependencies()
+            let dependencies = binding.dependencyNames
             for dependency in dependencies {
-                let edge = nodeCache.get(dependency)
+                let edge: Node
+                if let dependencyImplementationName = getImplementationName(dependency) {
+                    edge = nodeCache.put(dependency, implementationName: dependencyImplementationName, isBound: true)
+                }else{
+                    edge = nodeCache.put(dependency, implementationName: "not bound", isBound: false)
+                }
+
                 node.addDependency(edge)
             }
-            print(exposedTypeName)
         }
         
 
         let tree = graphChecker.resolve(rootNode)
         return tree.prettyPrint("", last: true)
 
+    }
+    
+    /*
+    private func checkForUnboundDependenciesTypes() -> Void {
+        for binding in bindings.values {
+            let unboundDependencies = binding.dependencyNames.filter(isDependencyUnbound)
+            
+            if !unboundDependencies.isEmpty {
+                //TODO: throw
+                print("dependencies are unbound: \(unboundDependencies.joinWithSeparator(","))")
+            }
+        }
+    }*/
+    
+    private func getImplementationName(exposedName: String) -> String? {
+        for binding in bindings.values {
+            if binding.exposedTypeName == exposedName {
+                return binding.implementationTypeName
+            }
+        }
+        return nil
     }
 
  

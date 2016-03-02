@@ -7,14 +7,17 @@ class NodeCache {
         cache = [:]
     }
     
-    func get(type: Any.Type) -> Node {
-        let name = String(type)
-        if let cachedNode = cache[name] {
+    func put(exposedName: String, implementationName: String, isBound: Bool) -> Node {
+        
+        //FIXME: This will not work
+        let key = "\(exposedName)-\(implementationName)"
+        
+        if let cachedNode = cache[key] {
             return cachedNode
         }
         
-        let node = Node(name: name)
-        cache[name] = node
+        let node = Node(exposedName: exposedName, implementationName: implementationName, isBound: isBound)
+        cache[key] = node
         return node
     }
     
