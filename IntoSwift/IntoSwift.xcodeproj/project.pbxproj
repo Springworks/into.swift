@@ -15,7 +15,6 @@
 		878711D11C86373300321A28 /* Injector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 878711CB1C86373300321A28 /* Injector.swift */; };
 		878711D21C86373300321A28 /* InstanceInjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 878711CC1C86373300321A28 /* InstanceInjector.swift */; };
 		878711D41C86373300321A28 /* Resolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 878711CE1C86373300321A28 /* Resolver.swift */; };
-		878711D61C8643A700321A28 /* NodeCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 878711D51C8643A700321A28 /* NodeCache.swift */; };
 		878711D81C8DF97300321A28 /* ResolverProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 878711D71C8DF97300321A28 /* ResolverProxy.swift */; };
 		878711DA1C8DFB7400321A28 /* InstanceBindingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 878711D91C8DFB7400321A28 /* InstanceBindingContainer.swift */; };
 /* End PBXBuildFile section */
@@ -42,7 +41,6 @@
 		878711CB1C86373300321A28 /* Injector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Injector.swift; sourceTree = "<group>"; };
 		878711CC1C86373300321A28 /* InstanceInjector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InstanceInjector.swift; sourceTree = "<group>"; };
 		878711CE1C86373300321A28 /* Resolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Resolver.swift; sourceTree = "<group>"; };
-		878711D51C8643A700321A28 /* NodeCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeCache.swift; sourceTree = "<group>"; };
 		878711D71C8DF97300321A28 /* ResolverProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResolverProxy.swift; sourceTree = "<group>"; };
 		878711D91C8DFB7400321A28 /* InstanceBindingContainer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InstanceBindingContainer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -111,7 +109,6 @@
 				878711CB1C86373300321A28 /* Injector.swift */,
 				878711CC1C86373300321A28 /* InstanceInjector.swift */,
 				878711CE1C86373300321A28 /* Resolver.swift */,
-				878711D51C8643A700321A28 /* NodeCache.swift */,
 				878711D71C8DF97300321A28 /* ResolverProxy.swift */,
 				878711D91C8DFB7400321A28 /* InstanceBindingContainer.swift */,
 			);
@@ -229,7 +226,6 @@
 				878711D21C86373300321A28 /* InstanceInjector.swift in Sources */,
 				878711D01C86373300321A28 /* InjectionError.swift in Sources */,
 				878711D41C86373300321A28 /* Resolver.swift in Sources */,
-				878711D61C8643A700321A28 /* NodeCache.swift in Sources */,
 				878711DA1C8DFB7400321A28 /* InstanceBindingContainer.swift in Sources */,
 				878711D81C8DF97300321A28 /* ResolverProxy.swift in Sources */,
 				878711D11C86373300321A28 /* Injector.swift in Sources */,

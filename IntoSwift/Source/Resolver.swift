@@ -19,11 +19,11 @@ public class Resolver {
             dependencyNames: [])
     }
         
-    public func tryResolve<T>(type: T.Type) throws -> T {
-        return try tryResolve()
+    public func resolve<T>(type: T.Type) throws -> T {
+        return try resolve()
     }
     
-    public func tryResolve<T>() throws -> T {
+    public func resolve<T>() throws -> T {
         
         let exposedTypeName = String(T.self)
         
@@ -44,7 +44,7 @@ public class Resolver {
     
     public func maybeResolve<T>() -> T? {
         do {
-            return try tryResolve()
+            return try resolve()
         } catch {
             return nil
         }
@@ -52,7 +52,7 @@ public class Resolver {
     
     public func maybeResolve<T>(type: T.Type) throws -> T? {
         do {
-            return try tryResolve(type)
+            return try resolve(type)
         } catch {
             return nil
         }

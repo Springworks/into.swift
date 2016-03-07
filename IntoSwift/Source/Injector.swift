@@ -63,7 +63,7 @@ public class Injector {
         return ScopeBinding(injector: self, scope: scope)
     }
     
-    public func tryBuild() throws -> Resolver {
+    public func build() throws -> Resolver {
         
         let graphChecker = DependencyGraphChecker()
         
@@ -74,15 +74,19 @@ public class Injector {
         
         let graph = graphChecker.resolve(bindings)
         
-        try graph.check()
+        do {
+            try graph.check()
+        } catch ( let error) {
+            throw InjectionError.FailedToResolve(cause: error, graph: graph.prettyPrint())
+        }
         
         instanceInjector = InstanceInjector()
         
         return resolver
     }
     
-    public func build() -> Resolver? {
-        return try? tryBuild()
+    public func maybeBuild() -> Resolver? {
+        return try? build()
     }
     
     public func printGraph() -> String {

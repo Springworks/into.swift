@@ -69,7 +69,7 @@ enum DependencyType {
         case .Leaf(let name):
             output += "" + name + "\n"
         case .Circular(let name):
-            output += "Circlular dependency on \(name)\n"
+            output += "Circular dependency on \(name)\n"
         case .Branch(let name, let branches):
             output += name + "\n"
             for i in branches.indices {

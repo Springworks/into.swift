@@ -39,6 +39,20 @@ class IntoSwiftTests: XCTestCase {
         print("graph:\n\(graph)")
     }
     
+    func testBuildingCircularDependency() {
+        do {
+        try injector
+            .bind(TestACircle.self).to(TestACircle.init)
+            .bind(TestBCircle.self).to(TestBCircle.init)
+            .bind(TestCCircle.self).to(TestCCircle.init)
+            .build()
+        } catch InjectionError.FailedToResolve(let cause, let graph) {
+            print(graph)
+        } catch {
+            // Try to recover or something
+        }
+    }
+    
 }
 
 

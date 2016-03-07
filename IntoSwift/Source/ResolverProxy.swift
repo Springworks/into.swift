@@ -9,6 +9,6 @@ class ResolverProxy {
             //TODO: Maybe just fatalError() here since this should never happen
             throw InjectionError.ResolverNotReady("The resolver is not ready to be used")
         }
-        return try resolver.tryResolve(type)
+        return try resolver.resolve(type)
     }
 }
