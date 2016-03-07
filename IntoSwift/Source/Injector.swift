@@ -1,5 +1,5 @@
 
-struct OngoingBinding<T>{
+public struct OngoingBinding<T>{
     let injector: Injector
     let protocolType: T.Type
     let scope: BindingScope
@@ -30,9 +30,9 @@ struct OngoingBinding<T>{
         injector.instanceInjector.bind(protocolType, toConstructor: constructor)
         return injector
     }
-  }
+}
 
-struct ScopeBinding {
+public struct ScopeBinding {
     let injector: Injector
     let scope: BindingScope
     
@@ -42,39 +42,53 @@ struct ScopeBinding {
 }
 
 
-enum BindingScope {
+public enum BindingScope {
     case Singleton
     case Fresh
 }
 
-class Injector {
+public class Injector {
     
-    let instanceInjector: InstanceInjector
-    let resolver: Resolver
+    var instanceInjector: InstanceInjector
     
-    init(){
-        resolver = Resolver()
-        //TODO: maybe pass in a resolver function that points to the resolved resolver
-        // that way the injector can hold the bindings and the resolver can be immutable
-        instanceInjector = InstanceInjector(resolver: resolver)
+    public init(){
+        instanceInjector = InstanceInjector()
     }
     
-    func bind<T>(type: T.Type) -> OngoingBinding<T> {
+    public func bind<T>(type: T.Type) -> OngoingBinding<T> {
         return OngoingBinding<T>(injector: self, protocolType: T.self, scope: .Fresh)
     }
     
-    func inScope(scope: BindingScope) -> ScopeBinding {
+    public func inScope(scope: BindingScope) -> ScopeBinding {
         return ScopeBinding(injector: self, scope: scope)
     }
     
-    func resolve() -> Resolver {
+    public func tryBuild() throws -> Resolver {
         
-        // TODO: check the resolver for binding errors
+        let graphChecker = DependencyGraphChecker()
         
-        // TODO: bind the resolver so that it always can be accessed as an injection
+        let (resolverProxy, bindings) = instanceInjector.build()
         
-        // TODO: the resolver needs to be cloned here. Or maybe it should be a value type instead or something
+        let resolver = Resolver(checkedBindings: bindings)
+        resolverProxy.resolver = resolver
+        
+        let graph = graphChecker.resolve(bindings)
+        
+        try graph.check()
+        
+        instanceInjector = InstanceInjector()
+        
         return resolver
     }
     
+    public func build() -> Resolver? {
+        return try? tryBuild()
+    }
+    
+    public func printGraph() -> String {
+        let graphChecker = DependencyGraphChecker()
+        let (_, bindings) = instanceInjector.build()
+        let graph = graphChecker.resolve(bindings)
+        return graph.prettyPrint()
+    }
 }

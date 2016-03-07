@@ -1,7 +1,18 @@
 
-struct InstanceInjector {
+class InstanceInjector {
     
-    let resolver:Resolver
+    var resolver:ResolverProxy
+    var bindings: [Binding]
+    
+    init(){
+        // The resolver proxy is just a proxy for the resolver that is built later.
+        // After building an instance of this it is exhaused and should not be used anymore
+        // since the bindings in here has references to a future resolver that only will resolve
+        // to the instances at the time of building it.
+        // If more injections are added after the resolver is checked and built it might produce strange errors
+        bindings = []
+        resolver = ResolverProxy()
+    }
     
     func bind<T>(toConstructor constructor: () throws -> T) -> Void {
         bind(T.self, toConstructor: constructor, dependencies: [])
@@ -50,6 +61,23 @@ struct InstanceInjector {
             return protocolInstance
         }
         
-        resolver.add(exposedType: P.self, implementationType: T.self, constructor: protocolConstructor, dependencies: dependencies)
+
+        let exposedTypeName = String(P.self)
+        let implementationTypeName = String(T.self)
+        let dependenyNames = dependencies.map{String($0)}
+        
+        let binding = InstanceBindingContainer<P>(exposedType: P.self,
+            implementationType: T.self,
+            constructor: protocolConstructor,
+            exposedTypeName: exposedTypeName,
+            implementationTypeName: implementationTypeName,
+            dependencyNames: dependenyNames)
+        
+        bindings.append(binding)
+        
+    }
+    
+    func build() -> (proxy: ResolverProxy, bindings: [Binding]){
+        return (resolver, bindings)
     }
 }

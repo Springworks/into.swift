@@ -16,7 +16,7 @@ class NodeCache {
             return cachedNode
         }
         
-        let node = Node(exposedName: exposedName, implementationName: implementationName, isBound: isBound)
+        let node = Node(exposedName: exposedName, isBound: isBound)
         cache[key] = node
         return node
     }

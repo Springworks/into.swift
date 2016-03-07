@@ -17,60 +17,26 @@ class IntoSwiftTests: XCTestCase {
     }
     
     func testPrintingGraph() {
-        let resolver = injector.bind(TestProtocol.self).to(TestStruct.init).resolve()
-        let graph = resolver.check()
+        let graph = injector.bind(TestProtocol.self).to(TestStruct.init).printGraph()
         print("graph:\n\(graph)")
     }
     
     func testPrintingGraphWithDependencies() {
-        let resolver = injector
+        let graph = injector
             .bind(TestStructWithDependency).to(TestStructWithDependency.init)
             .bind(TestProtocol.self).to(TestStruct.init)
             .bind(TestProtocol2.self).to(TestStruct2.init)
-            .resolve()
-        let graph = resolver.check()
+            .printGraph()
         print("graph:\n\(graph)")
     }
     
-    func testPrintingGraphWithCircularDependencies() {
-        let resolver = injector
+    func testPrintingGraphWithCircularDependencies()  {
+        let graph = injector
             .bind(TestACircle.self).to(TestACircle.init)
             .bind(TestBCircle.self).to(TestBCircle.init)
             .bind(TestCCircle.self).to(TestCCircle.init)
-            .resolve()
-        let graph = resolver.check()
+            .printGraph()
         print("graph:\n\(graph)")
-    }
-    
-    
-    func testStringifyingTypeNameExample() {
-        
-        let dict:[String:Any.Type] = ["TestStruct":TestStruct.self,
-            "TestStruct2":TestStruct2.self,
-            "TestStruct3":TestStruct3.self,
-            "TestProtocol":TestProtocol.self,
-            "TestProtocol2":TestProtocol2.self,
-            "TestProtocol3":TestProtocol3.self]
-        
-        self.measureBlock {
-            let name = String(TestStruct.self)
-            let type = dict[name]
-        }
-        
-        
-    }
-    
-    func testLookingUpFromList() {
-        var list:[Any.Type] = [TestStruct.self,
-            TestStruct2.self, TestStruct3.self,
-            TestProtocol.self, TestProtocol2.self,
-            TestProtocol3.self]
-        
-        self.measureBlock {
-            for type in list {
-                // do nothing
-            }
-        }
     }
     
 }
