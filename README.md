@@ -1,6 +1,6 @@
 # into.swift
 
-:syringe: _**into.swift**_ is a lightweight dependency injection framework for swift.
+_**into.swift**_ is a lightweight dependency injection framework for swift.
 It is intended to be easy to work with and with low overhead.
 
 
@@ -147,6 +147,7 @@ Everytime you `resolve()` you will get the same instance.
 
 ###### WeakSingleton
 When you bind anything you can cast to `AnyObject` (i.e. classes) you can also use WeakSingleton bindings.
+If you try to bind anything else it will be bound as a Singleton instead.
 It will keep a weak reference to the instance and as long as anyone else is holding a strong reference it will be kept.
 When the last strong reference is deleted the instance will be removed and the memory released.
 
@@ -158,9 +159,9 @@ instance1 = nil
 instance2 = nil
 var instance3:TestClass? = try! resolver.resolve(TestClass.self)
 ```
-In the example above `instance1` and `instance2` will both get the same reference.
-When `instance1` is setting it's value to `nil` then `instance2` is still holding a string reference.
-When `instance2` is also setting it's value to `nil` then no strong references exists and the resolver releases the memory.
+In the example above `instance1` and `instance2` will both get the same instance.
+When `instance1` is setting it's value to `nil` then `instance2` is still holding a strong reference.
+When `instance2` is also setting it's value to `nil` then no strong references exists and the memory is released.
 `instance3` is then resolving `TestClass` as well but then nothing is cached so a new instance will be created.
 
 #### Binding in tags

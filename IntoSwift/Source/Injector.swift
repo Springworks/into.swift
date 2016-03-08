@@ -1,8 +1,8 @@
 
 public struct OngoingBinding<T>{
-    let injector: Injector
-    let protocolType: T.Type
-    let scope: Scope
+    private let injector: Injector
+    private let protocolType: T.Type
+    private let scope: Scope
 
     func to(constructor: () throws -> T) -> Injector{
         injector.binder.bind(protocolType, toConstructor: constructor, inScope: scope)
@@ -18,11 +18,13 @@ public struct OngoingBinding<T>{
         injector.binder.bind(protocolType, toConstructor: constructor, inScope: scope)
         return injector
     }
+    
+    //TODO: Add more functions for 3,4,5 etc dependency arguments
 }
 
 public struct ScopeBinding {
-    let injector: Injector
-    let scope: Scope
+    private let injector: Injector
+    private let scope: Scope
     
     func bind<T>(type: T.Type) -> OngoingBinding<T> {
         return OngoingBinding<T>(injector: injector, protocolType: T.self, scope: scope)
@@ -32,14 +34,19 @@ public struct ScopeBinding {
 
 public class Injector {
     
-    var binder: Binder
+    private var binder: Binder
     
     public init(){
         binder = Binder()
     }
-    
+        
+    //TODO: Return an interface hiding the ongoing binding type maybe
     public func bind<T>(type: T.Type) -> OngoingBinding<T> {
         return inScope(.Prototype).bind(type)
+    }
+    
+    public func bind<T>(constructor: ()->T) -> Injector {
+        return bind(T.self).to(constructor)
     }
     
     public func inScope(scope: Scope) -> ScopeBinding {

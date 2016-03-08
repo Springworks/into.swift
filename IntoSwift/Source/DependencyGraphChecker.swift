@@ -47,8 +47,7 @@ enum DependencyType {
         }
         return output
     }
-    
-    //TODO: Maybe make another function for the root node to be able to skip the <root>
+
     func prettyPrint(indent: String, last:Bool) -> String {
         
         //TODO: prune the tree of types that appear multiple times maybe?
@@ -121,7 +120,7 @@ struct DependencyGraphChecker {
             nodes[binding.exposedTypeName] = node
         }
         
-        // check of unbound dependencies
+        // check for unbound dependencies
         bindings.forEach{ binding in
             let node = nodes[binding.exposedTypeName]
             binding.dependencyNames.forEach{ dependency in

@@ -151,6 +151,19 @@ class IntoSwiftTests: XCTestCase {
     }
     
     
+    func testBindingDirectlyToClassConstructorToItsOwnType() {
+        guard let resolver = try? injector.bind(TestClass.init).build() else {
+            XCTFail("Could not setup injector")
+            return
+        }
+        
+        guard let instance:TestClass = try? resolver.resolve() else {
+            XCTFail("Could not resolve instance")
+            return
+        }
+    }
+    
+    
     
 }
 
