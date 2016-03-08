@@ -1,5 +1,3 @@
-
-
 import XCTest
 @testable import IntoSwift
 
@@ -41,17 +39,118 @@ class IntoSwiftTests: XCTestCase {
     
     func testBuildingCircularDependency() {
         do {
-        try injector
-            .bind(TestACircle.self).to(TestACircle.init)
-            .bind(TestBCircle.self).to(TestBCircle.init)
-            .bind(TestCCircle.self).to(TestCCircle.init)
-            .build()
-        } catch InjectionError.FailedToResolve(let cause, let graph) {
+            try injector
+                .bind(TestACircle.self).to(TestACircle.init)
+                .bind(TestBCircle.self).to(TestBCircle.init)
+                .bind(TestCCircle.self).to(TestCCircle.init)
+                .build()
+        } catch InjectionError.FailedToResolve( _, let graph) {
             print(graph)
         } catch {
             // Try to recover or something
         }
     }
+    
+    func testResolvePrototypeScopeBindingReturnsNewInstances() {
+        
+        guard let resolver = try? injector.inScope(.Prototype).bind(TestClass.self).to(TestClass.init).build() else {
+            XCTFail("Could not setup injector")
+            return
+        }
+        
+        guard let instance:TestClass = try? resolver.resolve() else {
+            XCTFail("Could not create instance")
+            return
+        }
+        
+        instance.value = "first"
+        
+        guard let otherInstance:TestClass = try? resolver.resolve() else {
+            XCTFail("Could not create other instance")
+            return
+        }
+        
+        otherInstance.value = "seconds"
+        
+        XCTAssertNotEqual(instance.value, otherInstance.value)
+    }
+    
+    func testResolveWeakSingletonBindingReturnsSameInstanceWhenReferenceExists() {
+        guard let resolver = try? injector.inScope(.Weak).bind(TestClass.self).to(TestClass.init).build() else {
+            XCTFail("Could not setup injector")
+            return
+        }
+        
+        guard let instance:TestClass = try? resolver.resolve() else {
+            XCTFail("Could not create instance")
+            return
+        }
+        
+        instance.value = "first"
+        
+        guard let otherInstance:TestClass = try? resolver.resolve() else {
+            XCTFail("Could not create other instance")
+            return
+        }
+        
+        otherInstance.value = "seconds"
+        
+        XCTAssertEqual(instance.value, otherInstance.value)
+    }
+    
+    func testResolveWeakSingletonBindingReturnsANewInstanceWhenAllReferencesHaveBeenLost() {
+        guard let resolver = try? injector.inScope(.Weak).bind(TestClass.self).to(TestClass.init).build() else {
+            XCTFail("Could not setup injector")
+            return
+        }
+        
+        guard var instance:TestClass? = try? resolver.resolve(TestClass.self) else {
+            XCTFail("Could not create instance")
+            return
+        }
+        
+        instance?.value = "first"
+        
+        XCTAssertEqual(instance?.value, "first")
+        
+        // nil the reference
+        instance = nil
+        
+        guard let otherInstance:TestClass = try? resolver.resolve() else {
+            XCTFail("Could not create other instance")
+            return
+        }
+        
+        XCTAssertEqual(otherInstance.value, "nothing")
+    }
+    
+    func testResolveSingletonBindingReturnsTheSameInstanceEvenWhenAllReferencesHaveBeenLost() {
+        guard let resolver = try? injector.inScope(.Singleton).bind(TestClass.self).to(TestClass.init).build() else {
+            XCTFail("Could not setup injector")
+            return
+        }
+        
+        guard var instance:TestClass? = try? resolver.resolve(TestClass.self) else {
+            XCTFail("Could not create instance")
+            return
+        }
+        
+        instance?.value = "first"
+        
+        XCTAssertEqual(instance?.value, "first")
+        
+        // nil the reference
+        instance = nil
+        
+        guard let otherInstance:TestClass = try? resolver.resolve() else {
+            XCTFail("Could not create other instance")
+            return
+        }
+        
+        XCTAssertEqual(otherInstance.value, "first")
+    }
+    
+    
     
 }
 
@@ -63,6 +162,10 @@ protocol TestProtocol3 {}
 struct TestStruct: TestProtocol{}
 struct TestStruct2: TestProtocol2{}
 struct TestStruct3: TestProtocol3{}
+
+class TestClass {
+    var value: String = "nothing"
+}
 
 struct TestStructWithDependency{
     let a: TestProtocol

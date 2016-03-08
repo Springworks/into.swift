@@ -12,6 +12,7 @@ struct InstanceBindingContainer<ExposedType>: Binding {
     let exposedTypeName: String
     let implementationTypeName: String
     let dependencyNames: [String]
+    let scope: Scope
 }
 
 extension Dictionary where Key: Equatable {

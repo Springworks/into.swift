@@ -1,5 +1,5 @@
 
-class InstanceInjector {
+class Binder {
     
     var resolver:ResolverProxy
     var bindings: [Binding]
@@ -14,41 +14,41 @@ class InstanceInjector {
         resolver = ResolverProxy()
     }
     
-    func bind<T>(toConstructor constructor: () throws -> T) -> Void {
-        bind(T.self, toConstructor: constructor, dependencies: [])
+    func bind<T>(toConstructor constructor: () throws -> T, inScope scope: Scope) -> Void {
+        bind(T.self, toConstructor: constructor, dependencies: [], inScope: scope)
     }
     
-    func bind<T, P>(interface: P.Type, toInstance instance: T) -> Void {
+    func bind<T, P>(interface: P.Type, toInstance instance: T, inScope scope: Scope) -> Void {
         let constructor = {() throws -> T in
             return instance
         }
-        bind(P.self, toConstructor: constructor, dependencies: [])
+        bind(P.self, toConstructor: constructor, dependencies: [], inScope: scope)
     }
     
-    func bind<T, P>(interface: P.Type, toConstructor constructor: () throws -> T) -> Void {
-        bind(interface, toConstructor: constructor, dependencies: [])
+    func bind<T, P>(interface: P.Type, toConstructor constructor: () throws -> T, inScope scope: Scope) -> Void {
+        bind(interface, toConstructor: constructor, dependencies: [], inScope: scope)
     }
     
-    func bind<T, P, A0>(interface: P.Type, toConstructor constructor: (A0) throws -> T) -> Void {
+    func bind<T, P, A0>(interface: P.Type, toConstructor constructor: (A0) throws -> T, inScope scope: Scope) -> Void {
         let wrapperConstructor = { () throws -> T in
             let argument0 = try self.resolver.tryResolve(A0.self)
             let instance = try constructor(argument0)
             return instance
         }
-        bind(interface, toConstructor: wrapperConstructor, dependencies: [A0.self])
+        bind(interface, toConstructor: wrapperConstructor, dependencies: [A0.self], inScope: scope)
     }
     
-    func bind<T, P, A0, A1>(interface: P.Type, toConstructor constructor: (A0, A1) throws -> T) -> Void {
+    func bind<T, P, A0, A1>(interface: P.Type, toConstructor constructor: (A0, A1) throws -> T, inScope scope: Scope) -> Void {
         let wrapperConstructor = { () throws -> T in
             let argument0 = try self.resolver.tryResolve(A0.self)
             let argument1 = try self.resolver.tryResolve(A1.self)
             let instance = try constructor(argument0, argument1)
             return instance
         }
-        bind(interface, toConstructor: wrapperConstructor, dependencies: [A0.self, A1.self])
+        bind(interface, toConstructor: wrapperConstructor, dependencies: [A0.self, A1.self], inScope: scope)
     }
     
-    func bind<T, P>(interface: P.Type, toConstructor constructor: () throws -> T, dependencies: [Any.Type]) -> Void {
+    func bind<T, P>(interface: P.Type, toConstructor constructor: () throws -> T, dependencies: [Any.Type], inScope scope: Scope) -> Void {
         
         let protocolConstructor = { () throws -> P in
             
@@ -71,7 +71,8 @@ class InstanceInjector {
             constructor: protocolConstructor,
             exposedTypeName: exposedTypeName,
             implementationTypeName: implementationTypeName,
-            dependencyNames: dependenyNames)
+            dependencyNames: dependenyNames,
+            scope: scope)
         
         bindings.append(binding)
         

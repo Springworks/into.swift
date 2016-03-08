@@ -29,7 +29,13 @@ It's as simple as:
 
 ```swift
 injector.bind(MyProtocol.self).to(MyStruct.init)
+```
 
+You can also chain bindings togeather if you want to bind a lot of things:
+
+```swift
+injector.bind(MyProtocol.self).to(MyStruct.init)
+  		.bind(MyOtherProtocol.self).to(MyOtherStruct.init)
 ```
 
 ###### Resolving bindings
@@ -90,8 +96,9 @@ Dependency resolution is handled automatically. You just have to make sure that 
 ```swift
 struct MyStructThatDepends {
 	let someDependency: MyProtocol
-   init(someDependency: MyProtocol) {
-   }
+	init(someDependency: MyProtocol) {
+		self.someDependency = someDependency
+	}
 }
 ```
 
@@ -122,7 +129,39 @@ injector.bind(TheHubThing.self).to{ TheHubThing($0, $1, $2, $3, $4, $5) }
 TODO
 
 #### Binding in scopes
-TODO
+It is possible to bind in different scopes.
+There are three scopes `.Singleton`, `.Prototype` and `.WeakSingleton`
+
+You bind in a scope like this:
+
+```swift
+injector.inScope(.Singleton).bind(SomeProtocol.self).to(SomeClass.init)
+```
+
+###### Prototype
+Prototype bindings are the the default. When using Prototype bindings you will get a new fresh instance everytime you resolve.
+
+###### Singleton
+When binding in the Singleton scope only one reference will ever be created and a hard reference is kept so it will never disappear as long as the app is running.
+Everytime you `resolve()` you will get the same instance.
+
+###### WeakSingleton
+When you bind anything you can cast to `AnyObject` (i.e. classes) you can also use WeakSingleton bindings.
+It will keep a weak reference to the instance and as long as anyone else is holding a strong reference it will be kept.
+When the last strong reference is deleted the instance will be removed and the memory released.
+
+```swift
+let resolver = try! injector.inScope(.Weak).bind(TestClass.self).to(TestClass.init).build()
+var instance1:TestClass? = try! resolver.resolve(TestClass.self)
+var instance2:TestClass? = try! resolver.resolve(TestClass.self)
+instance1 = nil
+instance2 = nil
+var instance3:TestClass? = try! resolver.resolve(TestClass.self)
+```
+In the example above `instance1` and `instance2` will both get the same reference.
+When `instance1` is setting it's value to `nil` then `instance2` is still holding a string reference.
+When `instance2` is also setting it's value to `nil` then no strong references exists and the resolver releases the memory.
+`instance3` is then resolving `TestClass` as well but then nothing is cached so a new instance will be created.
 
 #### Binding in tags
 TODO
