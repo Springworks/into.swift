@@ -1,6 +1,6 @@
 # into.swift
 
-_**into.swift**_ is a lightweight dependency injection framework for swift.
+:syringe: _**into.swift**_ is a lightweight dependency injection framework for swift.
 It is intended to be easy to work with and with low overhead.
 
 
