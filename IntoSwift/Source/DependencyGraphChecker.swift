@@ -50,7 +50,9 @@ enum DependencyType {
 
     func prettyPrint(indent: String, last:Bool) -> String {
         
-        //TODO: prune the tree of types that appear multiple times maybe?
+        //TODO: prune the tree of types that appear multiple times maybe? Yes! definetly
+        
+        //TODO: Print the scope of the binding
         
         var outputIndent = indent
         var output = indent
@@ -106,6 +108,10 @@ struct DependencyGraphChecker {
     func resolve(bindings: [Binding]) -> DependencyType {
         
         var nodes: [String: Node] = [:]
+        
+        // add resolver so that does not appear as missing dependencies
+        let resolverName = String(Resolver.self)
+        nodes[resolverName] = Node(exposedName: resolverName, isBound: true)
         
         // add all the types as nodes
         bindings.forEach { binding in

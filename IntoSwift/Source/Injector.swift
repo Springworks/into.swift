@@ -28,6 +28,11 @@ public class Injector {
         let resolver = Resolver(checkedBindings: bindings)
         resolverProxy.resolver = resolver
         
+        //TODO: If the bindings comes from the resolver then the Resolver will be bound
+        // and there will be no reason to special handle it when checking the graph
+        // maybe the graph checking should be in the resolver anyway?
+        // that makes better sense since it will always be possible to check the graph then
+        
         let graph = graphChecker.resolve(bindings)
         
         do {
@@ -36,7 +41,7 @@ public class Injector {
             throw InjectionError.FailedToResolve(cause: error, graph: graph.prettyPrint())
         }
         
-        binder = Binder()
+        self.binder = Binder()
         
         return resolver
     }
